@@ -1,4 +1,4 @@
-# Skenario Serangan (untuk dicek dan dipoles oleh adik)
+# Skenario Serangan
 
 Ini cerita serangan palsu yang dipakai untuk demo. Tugasmu:
 1. Baca ceritanya sampai paham.

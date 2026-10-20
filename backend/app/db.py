@@ -98,3 +98,4 @@ def reset_db() -> None:
         conn.execute("DELETE FROM alerts")
         conn.execute("DELETE FROM incidents")
         conn.execute("DELETE FROM events")
+        conn.execute("DELETE FROM sqlite_sequence")   # restart numbering at 1

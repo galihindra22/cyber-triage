@@ -19,11 +19,11 @@ events (raw logs) -> alerts (detections) -> incidents (grouped story) ; mitre_te
 ## Chunks
 - [x] 1. Skeleton + data model + setup   <- done when you can open localhost:8000/docs
 - [x] 2. Attack simulator (IT + OT logs)   <- `python -m app.simulator` writes backend/data/logs/*.log (~5,600 lines)
-- [ ] 3. Log ingestion
-- [ ] 4. Detection rules
-- [ ] 5. Correlation + MITRE mapping
-- [ ] 6. Ollama integration (+ template fallback)
-- [ ] 7. Dashboard (Next.js)
+- [x] 3. Log ingestion   <- app/parser.py
+- [x] 4. Detection rules   <- app/detection.py (R001-R007), settings in app/config.py
+- [x] 5. Correlation + MITRE mapping   <- app/correlation.py. `python -m app.pipeline` = 5586 events -> 8 alerts -> 1 incident, 7/7 techniques found
+- [x] 6. Ollama summary (streamed) + template fallback + playbook   <- app/ai.py, app/playbook.py, data/playbook.csv (DRAFT: brother must verify + fill 'sumber')
+- [x] 7. Dashboard (Next.js, v1)   <- frontend/ . Run: cd frontend; npm install; npm run dev -> http://localhost:3000 (backend must run on :8000)
 - [ ] 8. Report export + polish
 
 ## Log formats (chunk 3 parser must handle all 4)
@@ -33,6 +33,15 @@ events (raw logs) -> alerts (detections) -> incidents (grouped story) ; mitre_te
 - ot_modbus.log: `ISO_TIME GEN-CTRL-01 src=.. unit=1 func=READ_HOLDING_REGISTERS|WRITE_SINGLE_REGISTER|WRITE_SINGLE_COIL reg=/coil= value=.. result=OK`
 - Attack answer key: backend/data/logs/ground_truth.json
 - AI test: qwen2.5:3b, short summary prompt, ~33s on 8GB CPU. Plan: stream text, warm up model before demo, recommendations from a playbook table (not AI).
+
+## API (chunk 3-5)
+- POST /api/pipeline/run  (demo button: regenerate logs + run everything)
+- GET /api/stats, /api/incidents, /api/incidents/{id}, /api/alerts, /api/mitre
+
+## Known simplifications (be honest in the pitch)
+- R004 maps 'connection to unknown outside IP' to T1566 Phishing; real phishing is an email event. Brother: review this mapping.
+- Generator setpoint scale (5000 = 50.00 Hz) is our assumption.
+- OT logs assume a passive sensor/gateway records Modbus traffic.
 
 ## Notes / problems
 (write anything weird here before asking Claude)
