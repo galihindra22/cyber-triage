@@ -6,12 +6,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 
 from .db import get_conn, init_db, reset_db
 from .pipeline import run_pipeline
 from .ai import stream_summary
 from .playbook import playbook_for
+from .report import build_report_html
 
 
 @asynccontextmanager
@@ -82,6 +83,15 @@ def get_incident(incident_id: int):
 def incident_summary(incident_id: int):
     """Streams the Bahasa summary (local AI, or a template if the AI is off)."""
     return StreamingResponse(stream_summary(incident_id), media_type="text/plain; charset=utf-8")
+
+
+@app.get("/api/incidents/{incident_id}/report", response_class=HTMLResponse)
+def incident_report(incident_id: int):
+    """Printable Bahasa report. Open in browser, then Ctrl+P -> Save as PDF."""
+    html = build_report_html(incident_id)
+    if html is None:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    return HTMLResponse(html)
 
 
 @app.get("/api/alerts")

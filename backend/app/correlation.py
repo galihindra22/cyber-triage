@@ -63,8 +63,9 @@ def correlate(conn):
         group.sort(key=lambda a: a["ts"])
         severity = max((a["severity"] for a in group), key=lambda s: C.SEVERITY_ORDER[s])
         cur = conn.execute(
-            "INSERT INTO incidents (title, severity, start_ts, end_ts) VALUES (?,?,?,?)",
-            (_title(group, techniques), severity, group[0]["ts"], group[-1]["ts"]))
+            "INSERT INTO incidents (title, severity, start_ts, end_ts, created_at) VALUES (?,?,?,?,?)",
+            (_title(group, techniques), severity, group[0]["ts"], group[-1]["ts"],
+             datetime.now().isoformat()))
         conn.executemany("UPDATE alerts SET incident_id=? WHERE id=?",
                          [(cur.lastrowid, a["id"]) for a in group])
     return len(groups)

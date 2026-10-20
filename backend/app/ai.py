@@ -19,10 +19,13 @@ OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:3b")
 SEV = {"critical": "kritis", "high": "tinggi", "medium": "sedang", "low": "rendah"}
 
 PROMPT = """Tulis ringkasan insiden keamanan siber dalam Bahasa Indonesia formal.
-Aturan: 3 sampai 4 kalimat, hanya berdasarkan data di bawah, jangan menambah fakta,
-jangan memberi rekomendasi.
+Aturan:
+- 4 sampai 5 kalimat, hanya berdasarkan data di bawah, jangan menambah fakta, jangan memberi rekomendasi.
+- Ceritakan berurutan dari kejadian paling awal sampai paling akhir.
+- Sebutkan jam mulai dan jam akhir, akun yang dipakai, dan dampak pada genset.
 
-Data:
+Insiden berlangsung pukul {start} sampai {end}.
+Data (urut waktu):
 {facts}
 """
 
@@ -45,10 +48,10 @@ def _distinct(alerts):
     return out
 
 
-def build_prompt(alerts):
+def build_prompt(inc, alerts):
     facts = "\n".join(f"- {a['ts'][11:16]} | {a['title']} ({a['technique_name']})"
                       for a in _distinct(alerts))
-    return PROMPT.format(facts=facts)
+    return PROMPT.format(start=inc["start_ts"][11:16], end=inc["end_ts"][11:16], facts=facts)
 
 
 def template_summary(inc, alerts):
@@ -63,7 +66,7 @@ def _ollama_stream(prompt):
     body = json.dumps({
         "model": OLLAMA_MODEL, "prompt": prompt, "stream": True,
         "keep_alive": "30m",
-        "options": {"temperature": 0.2, "num_predict": 160},
+        "options": {"temperature": 0.2, "num_predict": 200},
     }).encode()
     req = urllib.request.Request(f"{OLLAMA_URL}/api/generate", data=body,
                                  headers={"Content-Type": "application/json"})
@@ -87,7 +90,7 @@ def stream_summary(incident_id):
         return
     text = ""
     try:
-        for piece in _ollama_stream(build_prompt(alerts)):
+        for piece in _ollama_stream(build_prompt(inc, alerts)):
             text += piece
             yield piece
     except Exception:
@@ -96,4 +99,6 @@ def stream_summary(incident_id):
         text = template_summary(inc, alerts)
         yield text
     with get_conn() as conn:
-        conn.execute("UPDATE incidents SET summary=? WHERE id=?", (text.strip(), incident_id))
+        # Only save if this is still the SAME incident (a newer run may have replaced it).
+        conn.execute("UPDATE incidents SET summary=? WHERE id=? AND created_at=?",
+                     (text.strip(), incident_id, inc["created_at"]))
