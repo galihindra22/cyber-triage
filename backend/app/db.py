@@ -3,11 +3,14 @@ Database layer. We use plain sqlite3 (built into Python) so there is
 nothing extra to learn. One file = one database: backend/data/triage.db
 """
 import csv
+import os
 import sqlite3
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-DB_PATH = DATA_DIR / "triage.db"
+# Database + generated logs go in STATE_DIR (Docker sets it to a volume; locally = data/)
+STATE_DIR = Path(os.environ.get("STATE_DIR", DATA_DIR))
+DB_PATH = STATE_DIR / "triage.db"
 MITRE_CSV = DATA_DIR / "mitre_map.csv"
 
 # The whole data model in one place.
@@ -87,6 +90,7 @@ def load_mitre(conn: sqlite3.Connection) -> None:
 def init_db() -> None:
     """Create tables (if missing) and refresh the MITRE table."""
     DATA_DIR.mkdir(exist_ok=True)
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
     with get_conn() as conn:
         conn.executescript(SCHEMA)
         load_mitre(conn)

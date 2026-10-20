@@ -24,7 +24,9 @@ events (raw logs) -> alerts (detections) -> incidents (grouped story) ; mitre_te
 - [x] 5. Correlation + MITRE mapping   <- app/correlation.py. `python -m app.pipeline` = 5586 events -> 8 alerts -> 1 incident, 7/7 techniques found
 - [x] 6. Ollama summary (streamed) + template fallback + playbook   <- app/ai.py, app/playbook.py, data/playbook.csv (DRAFT: brother must verify + fill 'sumber')
 - [x] 7. Dashboard (Next.js, v1)   <- frontend/ . Run: cd frontend; npm install; npm run dev -> http://localhost:3000 (backend must run on :8000)
-- [ ] 8. Report export + polish
+- [x] 8a. Report export   <- app/report.py, GET /api/incidents/{id}/report (print to PDF from browser)
+- [x] 8b. Docker packaging (docker-compose.yml, Dockerfiles, DEPLOY.md) - written, user must test
+- [ ] 8c. Log import screen (optional), polish (sort playbook by severity), demo rehearsal, docs, video
 
 ## Log formats (chunk 3 parser must handle all 4)
 - windows_auth.log: `ISO_TIME HOST EventID=4624|4625 Account=.. SrcIP=.. LogonType=.. Result=SUCCESS|FAILURE`

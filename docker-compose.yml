@@ -1,12 +1,27 @@
-# Week 4 only. During weeks 1-3 run things directly (see PROJECT_NOTES.md).
+# One command to run everything:   docker compose up --build
+# Ollama (the local AI) stays on the host machine, outside Docker.
 services:
   backend:
     build: ./backend
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend/data:/code/data
     environment:
-      # Ollama runs on the host machine, not inside Docker
       - OLLAMA_URL=http://host.docker.internal:11434
-  # frontend service gets added in week 3-4
+      - STATE_DIR=/state
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./backend/data:/code/data   # mitre_map.csv + playbook.csv stay editable on the host
+      - state:/state                # database + generated logs
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  state:

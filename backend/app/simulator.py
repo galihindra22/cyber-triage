@@ -26,11 +26,12 @@ The random seed is fixed, so you get the SAME logs every time.
 That matters: a demo must be repeatable.
 """
 import json
+import os
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
 
-LOG_DIR = Path(__file__).resolve().parent.parent / "data" / "logs"
+LOG_DIR = Path(os.environ.get("STATE_DIR", Path(__file__).resolve().parent.parent / "data")) / "logs"
 
 # ---- The simulated day -------------------------------------------------
 DAY = datetime(2026, 10, 19)

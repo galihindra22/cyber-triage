@@ -7,7 +7,9 @@
 */
 import { useState, useEffect, useRef } from "react";
 
-const API = "http://localhost:8000";
+// Same machine that served this page, port 8000 (works on localhost and across a LAN).
+const API =
+  typeof window !== "undefined" ? `http://${window.location.hostname}:8000` : "http://localhost:8000";
 const SEV = { critical: "Kritis", high: "Tinggi", medium: "Sedang", low: "Rendah" };
 const RANK = { low: 1, medium: 2, high: 3, critical: 4 };
 
@@ -43,6 +45,7 @@ export default function Home() {
   const [writing, setWriting] = useState(false);
   const [error, setError] = useState("");
   const timer = useRef(null);
+  const abortRef = useRef(null);   // lets us stop an older summary that is still typing
 
   const down = "Tidak bisa terhubung ke backend di port 8000. Jalankan: uvicorn app.main:app --reload (folder backend, venv aktif).";
 
@@ -72,10 +75,13 @@ export default function Home() {
 
   // Reads the summary as it is being written and shows it live.
   async function summarize(id) {
+    if (abortRef.current) abortRef.current.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     setWriting(true);
     setSummary("");
     try {
-      const res = await fetch(`${API}/api/incidents/${id}/summary`, { method: "POST" });
+      const res = await fetch(`${API}/api/incidents/${id}/summary`, { method: "POST", signal: ctrl.signal });
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let text = "";
@@ -86,12 +92,15 @@ export default function Home() {
         setSummary(text);
       }
     } catch (e) {
+      if (e.name === "AbortError") return;   // a newer summary replaced this one
       setError("Gagal membuat ringkasan. Pastikan backend berjalan.");
     }
     setWriting(false);
   }
 
   async function run() {
+    if (abortRef.current) abortRef.current.abort();
+    setWriting(false);
     setLoading(true);
     setError("");
     setSummary("");
@@ -108,7 +117,10 @@ export default function Home() {
 
   useEffect(() => {
     load().then((inc) => inc && setShown(999)).catch(() => setError(down));
-    return () => clearInterval(timer.current);
+    return () => {
+      clearInterval(timer.current);
+      if (abortRef.current) abortRef.current.abort();
+    };
   }, []);
 
   const groups = incident ? groupAlerts(incident.alerts) : [];
@@ -125,7 +137,7 @@ export default function Home() {
           <p className="lead">Dari ribuan baris log menjadi satu cerita serangan.</p>
         </div>
         <div className="actions">
-          <button className="btn primary" onClick={run} disabled={loading}>
+          <button className="btn primary" onClick={run} disabled={loading || writing}>
             {loading ? "Memproses log..." : "Jalankan simulasi serangan"}
           </button>
           {incident && (
@@ -161,11 +173,21 @@ export default function Home() {
               {summary || incident.summary ||
                 (writing ? "Menulis ringkasan..." : "Ringkasan otomatis belum dibuat.")}
             </p>
-            {!writing && (
-              <button className="btn small" onClick={() => summarize(incident.id)}>
-                Tulis ringkasan
-              </button>
-            )}
+            <div className="btnrow">
+              {!writing && (
+                <button className="btn small" onClick={() => summarize(incident.id)}>
+                  Tulis ringkasan
+                </button>
+              )}
+              <a
+                className="btn small"
+                href={`${API}/api/incidents/${incident.id}/report`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Buka laporan (cetak atau simpan PDF)
+              </a>
+            </div>
           </section>
 
           <h3 className="tl-head">Alur serangan</h3>

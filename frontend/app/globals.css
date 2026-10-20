@@ -67,3 +67,6 @@ h1 { font-family: Georgia, "Times New Roman", serif; font-size: 2rem; line-heigh
 .pb p { margin: 4px 0; max-width: 68ch; }
 .pbtitle { font-weight: 700; margin-bottom: 6px !important; }
 .src { color: var(--muted); font-size: 0.9rem; }
+
+.btnrow { display: flex; gap: 10px; flex-wrap: wrap; }
+a.btn { display: inline-block; text-decoration: none; }

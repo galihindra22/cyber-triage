@@ -10,13 +10,14 @@ Standard event fields:
 Lines we can't understand are counted as 'skipped', never crash the run.
 """
 import json
+import os
 import re
 from datetime import datetime
 from pathlib import Path
 
 from .config import HOST_IPS
 
-LOG_DIR = Path(__file__).resolve().parent.parent / "data" / "logs"
+LOG_DIR = Path(os.environ.get("STATE_DIR", Path(__file__).resolve().parent.parent / "data")) / "logs"
 
 MONTHS = {m: i + 1 for i, m in enumerate(
     ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
