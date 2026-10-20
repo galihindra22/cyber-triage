@@ -1,0 +1,27 @@
+[
+  {
+    "time": "20:42",
+    "step": "Phishing: WS-ENG-07 contacts a suspicious outside server",
+    "mitre": "T1566"
+  },
+  {
+    "time": "21:00-21:04",
+    "step": "200 failed logins on WS-ADM-03 from WS-ENG-07",
+    "mitre": "T1110"
+  },
+  {
+    "time": "21:05",
+    "step": "Successful login as budi.s from the same IP",
+    "mitre": "T1078"
+  },
+  {
+    "time": "21:18",
+    "step": "budi.s logs into SCADA-ENG-01 by remote desktop",
+    "mitre": "T1021"
+  },
+  {
+    "time": "21:25",
+    "step": "Modbus: setpoint changed 50.00Hz -> 25.00Hz, then generator STOP",
+    "mitre": "T0855, T0836, T0831"
+  }
+]

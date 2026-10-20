@@ -1,0 +1,9 @@
+technique_id,name,tactic,matrix,penjelasan_id
+T1566,Phishing,Initial Access,enterprise,Penyerang mengirim email palsu untuk mencuri kredensial atau memasang malware.
+T1110,Brute Force,Credential Access,enterprise,Penyerang menebak password berulang kali sampai berhasil masuk.
+T1078,Valid Accounts,Initial Access,enterprise,Penyerang memakai akun sah yang sudah dicuri untuk masuk ke sistem.
+T1021,Remote Services,Lateral Movement,enterprise,Penyerang berpindah ke komputer lain lewat layanan remote seperti RDP atau SMB.
+T1048,Exfiltration Over Alternative Protocol,Exfiltration,enterprise,Penyerang mengirim data keluar jaringan lewat protokol yang tidak lazim.
+T0855,Unauthorized Command Message,Impair Process Control,ics,Perintah tidak sah dikirim ke perangkat kontrol industri seperti PLC.
+T0836,Modify Parameter,Impair Process Control,ics,Parameter perangkat kontrol (misalnya setpoint) diubah tanpa izin.
+T0831,Manipulation of Control,Impact,ics,Penyerang mengambil alih kendali proses fisik seperti genset atau pompa.
